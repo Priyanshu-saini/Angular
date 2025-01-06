@@ -11,20 +11,24 @@
             iconCancelClass="hidden"
     ></p-rating>
 
-    <div class="row">
+    <div class="row gap-05">
         <button 
             type="button"
             pButton
-            icon="pi pi-plus"
+            icon="pi pi-pencil"
             (click)="editProduct()"
-            label="Add Product"
+            label="Edit Product"
             ></button>
         <button 
             type="button"
             pButton
-            icon="pi pi-plus"
-            (click)="deleteProduct()"
-            label="Add Product"
+            icon="pi pi-trash"
+            (click)="confirmDelete()"
+            #deleteButton
+            class="p-button-danger"
+            label="Delete"
         ></button>
     </div>
 </div>
+
+<p-confirmPopup></p-confirmPopup>

@@ -1,15 +1,16 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { ProductsService } from '../services/products.service';
 import { Product, Products } from '../../types';
 import { ProductComponent } from "../components/product/product.component";
 import { CommonModule } from '@angular/common';
-import { PaginatorModule } from 'primeng/paginator';
+import { Paginator, PaginatorModule } from 'primeng/paginator';
 import { EditPopupComponent } from "../components/edit-popup/edit-popup.component";
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [ProductComponent, CommonModule, PaginatorModule, EditPopupComponent],
+  imports: [ProductComponent, CommonModule, PaginatorModule, EditPopupComponent, ButtonModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
@@ -19,6 +20,8 @@ export class HomeComponent {
     ){
       console.log('constructor');
     }
+
+    @ViewChild('paginator') paginator: Paginator | undefined;
 
     products: Product[] = [];
 
@@ -38,7 +41,10 @@ export class HomeComponent {
     }
 
     toggleDeleteProduct(product: Product){
-      
+      if(!product.id){
+        return ;
+      }
+      this.deleteProduct(product.id);
     }
 
     selectedProduct: Product = {
@@ -53,6 +59,7 @@ export class HomeComponent {
       if(!this.selectedProduct.id){
         return;
       }
+
       this.editProduct(product,this.selectedProduct.id);
       this.displayEditPopup = false;
     }
@@ -71,8 +78,12 @@ export class HomeComponent {
       this.fetchProducts(event.page, event.rows);
     }
 
+    resetPaginator(){
+      this.paginator?.changePage(0);
+    }
+
     fetchProducts(page: number, perPage: number){
-      this.productsService.getProducts('http://localhost:3000/clothes',{page,perPage})
+      this.productsService.getProducts(`http://localhost:3000/clothes`,{page,perPage})
       .subscribe({  
         next: (data: Products) => {
           this.products = data.items;
@@ -85,11 +96,12 @@ export class HomeComponent {
     }
 
     editProduct(product: Product, id: number){
-      this.productsService.editProducts('http://localhost:3000/clothes/${id}' ,product)
+      this.productsService.editProducts(`http://localhost:3000/clothes/${id}` ,product)
       .subscribe(
         {
           next: (data) =>{
             this.fetchProducts(0,this.rows);
+            this.resetPaginator();
             console.log(data);
           },
           error: (error) =>{
@@ -100,12 +112,13 @@ export class HomeComponent {
     }
 
     deleteProduct(id: number){
-      this.productsService.deleteProducts('http://localhost:3000/clothes/${id}' )
+      this.productsService.deleteProducts(`http://localhost:3000/clothes/${id}` )
       .subscribe(
         {
           next: (data) =>{
             this.fetchProducts(0,this.rows);
             console.log(data);
+            this.resetPaginator();
           },
           error: (error) =>{
             console.log(error);
@@ -115,12 +128,13 @@ export class HomeComponent {
     }
 
     addProduct(product: Product){
-      this.productsService.addProducts('http://localhost:3000/clothes/${id}' ,product)
+      this.productsService.addProducts(`http://localhost:3000/clothes` ,product)
       .subscribe(
         {
           next: (data) =>{
             this.fetchProducts(0,this.rows);
-            console.log(data);
+            this.resetPaginator();
+            console.log(data);  
           },
           error: (error) =>{
             console.log(error);
